@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const RAPID_API_KEY = "3aa34c36famsh9f7691bbf2435cbp1e6e30jsnebe9ebecdd09";
-const RAPID_API_HOST = "booking-com15.p.rapidapi.com";
+const RAPID_API_KEY = process.env.NEXT_PUBLIC_RAPID_API_KEY!;
+const RAPID_API_HOST = process.env.NEXT_PUBLIC_RAPID_API_HOST!;
 
 export const flightApi = createApi({
     reducerPath: "flightApi",
