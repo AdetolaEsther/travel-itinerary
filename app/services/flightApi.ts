@@ -1,5 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, FlightDestination, FlightDetailsData, FlightSearchData } from "../types/api";
+import {
+    ApiResponse,
+    FlightDestination,
+    FlightDetailsData,
+    FlightSearchData,
+} from "../types/api";
 
 export interface FlightSearchParams {
     fromId: string;
@@ -8,19 +13,10 @@ export interface FlightSearchParams {
     cabinClass: string;
 }
 
-const RAPID_API_KEY = process.env.NEXT_PUBLIC_RAPID_API_KEY!;
-const RAPID_API_HOST = process.env.NEXT_PUBLIC_RAPID_API_HOST!;
-
 export const flightApi = createApi({
     reducerPath: "flightApi",
     baseQuery: fetchBaseQuery({
-        baseUrl: "https://booking-com15.p.rapidapi.com/api/v1/flights",
-        prepareHeaders: (headers) => {
-            headers.set("x-rapidapi-key", RAPID_API_KEY);
-            headers.set("x-rapidapi-host", RAPID_API_HOST);
-            headers.set("Content-Type", "application/json");
-            return headers;
-        },
+        baseUrl: "/api/rapidapi/flights",
     }),
     endpoints: (builder) => ({
         searchDestination: builder.query<

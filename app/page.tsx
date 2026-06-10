@@ -91,8 +91,8 @@ export default function Home() {
 
                 <div className="px-4 md:px-10 lg:px-16 py-6 flex flex-col gap-3">
                     <div className="flex items-start justify-between gap-4">
-                        <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2 w-fit px-3 py-1.5 rounded text-[#7A4504] bg-[#fef3e2] text-sm font-medium ">
+                        <div className="flex flex-col gap-2 w-full">
+                            <div className="flex items-center gap-2 w-fit text-[#7A4504] bg-[#fef3e2] text-sm font-medium">
                                 <Icon
                                     icon="mdi:calendar-outline"
                                     width="16"
@@ -107,7 +107,7 @@ export default function Home() {
                                 <span>21 April 2024</span>
                             </div>
 
-                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight m-0 p-0">
                                 Bahamas Family Trip
                             </h1>
 

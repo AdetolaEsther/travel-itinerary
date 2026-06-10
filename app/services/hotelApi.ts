@@ -1,9 +1,10 @@
-
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { ApiResponse, HotelDestination, HotelDetailsData, HotelSearchData } from "../types/api";
-
-const RAPID_API_KEY = process.env.NEXT_PUBLIC_RAPID_API_KEY!;
-const RAPID_API_HOST = process.env.NEXT_PUBLIC_RAPID_API_HOST!;
+import {
+    ApiResponse,
+    HotelDestination,
+    HotelDetailsData,
+    HotelSearchData,
+} from "../types/api";
 
 export interface HotelSearchParams {
     dest_id: string;
@@ -19,12 +20,7 @@ export interface HotelSearchParams {
 export const hotelApi = createApi({
     reducerPath: "hotelApi",
     baseQuery: fetchBaseQuery({
-        baseUrl: "https://booking-com15.p.rapidapi.com/api/v1/hotels",
-        prepareHeaders: (headers) => {
-            headers.set("x-rapidapi-key", RAPID_API_KEY);
-            headers.set("x-rapidapi-host", RAPID_API_HOST);
-            return headers;
-        },
+        baseUrl: "/api/rapidapi/hotels",
     }),
     endpoints: (builder) => ({
         searchDestination: builder.query<

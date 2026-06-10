@@ -1,13 +1,9 @@
-
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type {
     ApiResponse,
     AttractionDetailsData,
     AttractionLocationData,
 } from "../types/api";
-
-const RAPID_API_KEY = process.env.NEXT_PUBLIC_RAPID_API_KEY!;
-const RAPID_API_HOST = process.env.NEXT_PUBLIC_RAPID_API_HOST!;
 
 export interface AttractionSearchParams {
     id: string;
@@ -18,13 +14,7 @@ export interface AttractionSearchParams {
 export const attractionApi = createApi({
     reducerPath: "attractionApi",
     baseQuery: fetchBaseQuery({
-        baseUrl: "https://booking-com15.p.rapidapi.com/api/v1/attraction",
-        prepareHeaders: (headers) => {
-            headers.set("x-rapidapi-key", RAPID_API_KEY);
-            headers.set("x-rapidapi-host", RAPID_API_HOST);
-            headers.set("Accept", "application/json");
-            return headers;
-        },
+        baseUrl: "/api/rapidapi/attraction",
     }),
     endpoints: (builder) => ({
         searchLocation: builder.query<
@@ -60,4 +50,3 @@ export const {
     useLazySearchAttractionsQuery,
     useGetAttractionDetailsQuery,
 } = attractionApi;
-
