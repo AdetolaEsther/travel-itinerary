@@ -1,65 +1,371 @@
-import Image from "next/image";
+"use client";
 
+import Image from "next/image";
+import { theme } from "./theme";
+import { Icon } from "@iconify/react";
+import FlightCard from "./components/Flightcard";
+import HotelCard from "./components/Hotelcard";
+import ActivityCard from "./components/ActivityCard";
+import Link from "next/link";
+import { useSelector } from "react-redux";
+import { RootState } from "./store/store";
+
+const tripCards = [
+    {
+        title: "Activities",
+        description:
+            "Build, personalize, and optimize your itineraries with our trip planner.",
+        buttonLabel: "Add Activities",
+        href: "/activities",
+        bgColor: theme.colors.secondary,
+        buttonBgColor: theme.colors.primary,
+        buttonTextColor: "#fff",
+        titleColor: "#fff",
+        descColor: "rgba(255,255,255,0.8)",
+    },
+    {
+        title: "Hotels",
+        description:
+            "Build, personalize, and optimize your itineraries with our trip planner.",
+        buttonLabel: "Add Hotels",
+        href: "/hotels",
+        bgColor: "#eef3fb",
+        buttonBgColor: theme.colors.primary,
+        buttonTextColor: "#fff",
+        titleColor: "#1a1a2e",
+        descColor: "#6b7280",
+    },
+    {
+        title: "Flights",
+        description:
+            "Build, personalize, and optimize your itineraries with our trip planner.",
+        buttonLabel: "Add Flights",
+        href: "/flights",
+        bgColor: theme.colors.primary,
+        buttonBgColor: "#fff",
+        buttonTextColor: theme.colors.primary,
+        titleColor: "#fff",
+        descColor: "rgba(255,255,255,0.8)",
+    },
+];
+
+const hotels = [
+    {
+        name: "Riviera Resort, Lekki",
+        address:
+            "18, Kenneth Agbakuru Street, Off Access Bank Admiralty Way, Lekki Phase1",
+        rating: 8.5,
+        reviews: 436,
+        roomType: "King size room",
+        price: "123,450.00",
+        totalPrice: "560,000",
+        roomNightsSummary: "1 room x 10 nights incl. taxes",
+        facilities: ["Pool", "Bar"],
+        checkIn: "20-04-2024",
+        checkOut: "29-04-2024",
+    },
+    {
+        name: "Riviera Resort, Lekki",
+        address:
+            "18, Kenneth Agbakuru Street, Off Access Bank Admiralty Way, Lekki Phase1",
+        rating: 8.5,
+        reviews: 436,
+        roomType: "King size room",
+        price: "123,450.00",
+        totalPrice: "560,000",
+        roomNightsSummary: "1 room x 10 nights incl. taxes",
+        facilities: ["Pool", "Bar"],
+        checkIn: "20-04-2024",
+        checkOut: "29-04-2024",
+    },
+];
+
+const activities = [
+    {
+        name: "The Museum of Modern Art",
+        description:
+            "Works from Van Gogh to Warhol & beyond plus a sculpture garden, 2 cafes & The modern restaurant",
+        rating: 4.5,
+        reviews: 436,
+        duration: "1 Hour",
+        price: "123,450.00",
+        timeDate: "10:30 AM on Mar 19",
+        included: "Admission to the Empire State Building",
+        day: "Day 1",
+    },
+    {
+        name: "The Museum of Modern Art",
+        description:
+            "Works from Van Gogh to Warhol & beyond plus a sculpture garden, 2 cafes & The modern restaurant",
+        rating: 4.5,
+        reviews: 436,
+        duration: "1 Hour",
+        price: "123,450.00",
+        timeDate: "10:30 AM on Mar 19",
+        included: "Admission to the Empire State Building",
+        day: "Day 1 - (2)",
+    },
+    {
+        name: "The Museum of Modern Art",
+        description:
+            "Works from Van Gogh to Warhol & beyond plus a sculpture garden, 2 cafes & The modern restaurant",
+        rating: 4.5,
+        reviews: 436,
+        duration: "1 Hour",
+        price: "123,450.00",
+        timeDate: "10:30 AM on Mar 19",
+        included: "Admission to the Empire State Building",
+        day: "Day 2",
+    },
+];
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+  const itineraryFlights = useSelector(
+      (state: RootState) => state.itinerary.flights,
   );
+  console.log({ itineraryFlights });
+    return (
+        <div className="w-full flex flex-col bg-white">
+            <section id="home" className="w-full">
+                <div className="relative w-full h-[220px] overflow-hidden">
+                    <Image
+                        src="/banner.png"
+                        alt="Banner"
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                    <button className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/40 rounded p-2">
+                        <Icon
+                            icon="material-symbols:arrow-back"
+                            width="28"
+                            height="28"
+                            className="text-gray-800"
+                        />
+                    </button>
+                </div>
+
+                <div className="px-4 md:px-10 lg:px-16 py-6 flex flex-col gap-3">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 w-fit px-3 py-1.5 rounded text-[#7A4504] bg-[#fef3e2] text-sm font-medium ">
+                                <Icon
+                                    icon="mdi:calendar-outline"
+                                    width="16"
+                                    height="16"
+                                />
+                                <span>21 March 2024</span>
+                                <Icon
+                                    icon="mdi:arrow-right"
+                                    width="14"
+                                    height="14"
+                                />
+                                <span>21 April 2024</span>
+                            </div>
+
+                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                                Bahamas Family Trip
+                            </h1>
+
+                            <div className="flex items-center gap-2 text-gray-500 text-sm">
+                                <span>New York,</span>
+                                <span className="font-semibold text-gray-700">
+                                    United States of America
+                                </span>
+                                <div className="w-px h-4 bg-gray-300 mx-1" />
+                                <span>Solo Trip</span>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-3 shrink-0">
+                            <div className="flex items-center gap-2">
+                                <button className="flex items-center gap-2 px-8 py-2 rounded  bg-[#e6f0ff] text-sm text-gray-500 shadow-sm">
+                                    <Icon
+                                        icon="mdi:account-plus-outline"
+                                        width="20"
+                                        height="20"
+                                        color={theme.colors.primary}
+                                    />
+                                </button>
+                                <Icon
+                                    icon="mdi:dots-horizontal"
+                                    width="20"
+                                    height="20"
+                                    className="text-gray-500"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <img
+                                    src="https://i.pravatar.cc/100"
+                                    alt="avatar"
+                                    className="w-9 h-9 rounded-full border-2 border-white shadow object-cover"
+                                />
+                                <button className="flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-white hover:bg-gray-50 transition shadow-sm">
+                                    <Icon
+                                        icon="mdi:cog-outline"
+                                        width="20"
+                                        height="20"
+                                        className="text-gray-500"
+                                    />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-row gap-4 mt-2 overflow-x-auto ">
+                        {tripCards.map(
+                            ({
+                                title,
+                                description,
+                                buttonLabel,
+                                href,
+                                bgColor,
+                                buttonBgColor,
+                                buttonTextColor,
+                                titleColor,
+                                descColor,
+                            }) => (
+                                <div
+                                    key={title}
+                                    className="rounded border border-gray-200 p-6 flex flex-col justify-between shrink-0 shadow-sm"
+                                    style={{
+                                        backgroundColor: bgColor,
+                                        width: 270,
+                                        height: 193,
+                                    }}
+                                >
+                                    <h3
+                                        className="font-bold text-lg"
+                                        style={{ color: titleColor }}
+                                    >
+                                        {title}
+                                    </h3>
+                                    <p
+                                        className="text-sm leading-relaxed flex-1"
+                                        style={{ color: descColor }}
+                                    >
+                                        {description}
+                                    </p>
+                                    <Link href={href}>
+                                        <button
+                                            className="text-sm font-semibold px-2 py-2 mb-2 rounded transition-opacity hover:opacity-90 w-full"
+                                            style={{
+                                                backgroundColor: buttonBgColor,
+                                                color: buttonTextColor,
+                                            }}
+                                        >
+                                            {buttonLabel}
+                                        </button>
+                                    </Link>
+                                </div>
+                            ),
+                        )}
+                    </div>
+                </div>
+            </section>
+            <section id="itinerary" className="w-full ">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4 py-2">
+                    Trip itineraries{" "}
+                </h2>
+                <p className="text-gray-600 mb-6">
+                    Your trip itineraries are placed here
+                </p>
+
+                <div className="flex flex-col gap-4 p-4 bg-[#f0f2f5]">
+                    <div className="flex items-center justify-between mb-2 bg-[#f0f2f5]">
+                        <div className="flex items-center gap-2">
+                            <Icon
+                                icon="mingcute:flight-inflight-line"
+                                width="22"
+                                height="22"
+                                className="text-gray-700"
+                            />
+                            <h2 className="text-xl font-bold text-gray-900">
+                                Flights
+                            </h2>
+                        </div>
+                        <a
+                            className="text-sm font-semibold px-5 py-2 rounded bg-white transition hover:opacity-90"
+                            style={{
+                                color: theme.colors.primary,
+                            }}
+                            href="/flights"
+                        >
+                            Add Flights
+                        </a>
+                    </div>
+                    {itineraryFlights?.length > 0 ? (
+                        itineraryFlights.map((flight: any, i: number) => (
+                            <FlightCard key={i} {...flight} />
+                        ))
+                    ) : (
+                        <p className="text-sm text-gray-500">
+                            No flights added to itinerary yet
+                        </p>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-4 p-4 bg-[#344054] mt-6">
+                    <div className="flex items-center justify-between mb-2 ">
+                        <div className="flex items-center gap-2">
+                            <Icon
+                                icon="icon-park-outline:building-four"
+                                width="22"
+                                height="22"
+                                className="text-white"
+                            />
+                            <h2 className="text-xl font-bold text-white">
+                                Hotels{" "}
+                            </h2>
+                        </div>
+                        <a
+                            className="text-sm font-semibold px-5 py-2 rounded bg-white text-[#344054] border-2 transition hover:opacity-90"
+                            // style={{
+                            //     color: theme.colors.primary,
+                            //     borderColor: theme.colors.primary,
+                            // }}
+                            href="/hotels"
+                        >
+                            Add Hotels
+                        </a>
+                    </div>
+                    <div className="flex flex-col gap-3 px-4 pb-4">
+                        {hotels.map((hotel, i) => (
+                            <HotelCard key={i} {...hotel} />
+                        ))}
+                    </div>
+                </div>
+                <div
+                    className="rounded overflow-hidden mt-6"
+                    style={{ backgroundColor: theme.colors.primary }}
+                >
+                    <div className="flex items-center justify-between px-5 py-4 ">
+                        <div className="flex items-center gap-2">
+                            <Icon
+                                icon="mingcute:road-line"
+                                width="22"
+                                height="22"
+                                className="text-white"
+                            />
+                            <h2 className="text-lg font-bold text-white">
+                                Activities
+                            </h2>
+                        </div>
+                        <a
+                            className="text-sm font-semibold px-5 py-2 rounded bg-white transition hover:opacity-90"
+                            style={{ color: theme.colors.primary }}
+                            href="/activities"
+                        >
+                            Add Activities
+                        </a>
+                    </div>
+                    <div className="flex flex-col gap-3 px-4 pb-4">
+                        {activities.map((activity, i) => (
+                            <ActivityCard key={i} {...activity} />
+                        ))}
+                    </div>
+                </div>
+            </section>
+        </div>
+    );
 }
