@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -6,9 +7,72 @@ import { theme } from "@/app/theme";
 import Link from "next/link";
 import HotelCard from "../components/Hotelcard";
 import { useDispatch } from "react-redux";
-import { useLazySearchDestinationQuery, useLazySearchHotelsQuery } from "../services/hotelApi";
-import { addHotel } from "../store/itinerarySlice";
+import {
+    useLazySearchDestinationQuery,
+    useSearchHotelsQuery,
+} from "../services/hotelApi";
+import { addHotel, removeHotel } from "../store/itinerarySlice";
 
+interface HotelSearchParams {
+    dest_id: string;
+    search_type: string;
+    arrival_date: string;
+    departure_date: string;
+    adults: number;
+    room_qty: number;
+}
+
+const resolveDestination = (res: { data?: unknown }) => {
+    const data = res?.data;
+    if (Array.isArray(data)) return data[0];
+    if (data && typeof data === "object" && "destinations" in data) {
+        const destinations = (data as { destinations?: unknown[] })
+            .destinations;
+        if (Array.isArray(destinations)) return destinations[0];
+    }
+    return null;
+};
+
+const mapHotelsToCards = (
+    hotels: Array<{
+        hotel_id: number | string;
+        property?: {
+            name?: string;
+            reviewScore?: number;
+            reviewCount?: number;
+            propertyClass?: number;
+            wishlistName?: string;
+        };
+        priceBreakdown?: { grossPrice?: { value?: number } };
+    }> = [],
+    checkIn?: string,
+    checkOut?: string,
+) =>
+    hotels.map((hotel) => {
+        const property = hotel.property || {};
+        const priceValue = hotel.priceBreakdown?.grossPrice?.value;
+        const formattedPrice =
+            priceValue != null
+                ? Number(priceValue).toLocaleString("en-NG", {
+                      minimumFractionDigits: 2,
+                  })
+                : undefined;
+
+        return {
+            hotel_id: String(hotel.hotel_id),
+            name: property.name || "Hotel",
+            address: property.wishlistName || "",
+            rating: property.reviewScore,
+            reviews: property.reviewCount,
+            roomType: property.propertyClass
+                ? `${property.propertyClass}-star property`
+                : undefined,
+            price: formattedPrice,
+            totalPrice: formattedPrice,
+            checkIn,
+            checkOut,
+        };
+    });
 
 // const staticHotels = [
 //     {
@@ -73,58 +137,75 @@ export default function HotelSearchPage() {
     const dispatch = useDispatch();
 
     const [triggerDestination] = useLazySearchDestinationQuery();
- const [triggerHotels, { data: hotelResults, isLoading, isError }] =
-     useLazySearchHotelsQuery();
 
-    const [destId, setDestId] = useState<string | null>(null);
     const [destination, setDestination] = useState("");
     const [checkIn, setCheckIn] = useState("");
     const [checkOut, setCheckOut] = useState("");
     const [rooms, setRooms] = useState(1);
     const [guests, setGuests] = useState(2);
-    const [hasSearched, setHasSearched] = useState(false);
+    const [searchParams, setSearchParams] = useState<HotelSearchParams | null>(
+        null,
+    );
     const [activeSort, setActiveSort] = useState("Top Rated");
     const [activeStar, setActiveStar] = useState("Any");
-    const [addedHotels, setAddedHotels] = useState<number[]>([]);
+    const [addedHotels, setAddedHotels] = useState<string[]>([]);
 
- const handleSearch = async () => {
-     if (!destination.trim()) {
-         alert("Please enter a destination");
-         return;
-     }
+    const {
+        data: hotelResults,
+        isFetching: isSearchingHotels,
+        error: hotelError,
+    } = useSearchHotelsQuery(searchParams!, { skip: !searchParams });
 
-     try {
-         const res = await triggerDestination(destination).unwrap();
-         console.log("DEST RESPONSE:", res);
-         const firstDest = res?.data?.[0];
-         if (!firstDest) {
-             alert("Destination not found");
-             return;
-         }
+    const cleanHotels = mapHotelsToCards(
+        hotelResults?.data?.hotels,
+        searchParams?.arrival_date,
+        searchParams?.departure_date,
+    );
 
-         setDestId(firstDest.dest_id);
+    const handleSearchSubmit = async () => {
+        if (!destination.trim()) {
+            alert("Please enter a destination");
+            return;
+        }
+        if (!checkIn || !checkOut) {
+            alert("Please select check-in and check-out dates");
+            return;
+        }
 
-         await triggerHotels({
-             dest_id: firstDest.dest_id,
-             search_type: firstDest.search_type || "CITY",
-             adults: guests,
-             room_qty: rooms,
-             page_number: 1,
-         }).unwrap();
+        try {
+            const res = await triggerDestination(destination.trim()).unwrap();
+            const firstDest = resolveDestination(res);
 
-         setHasSearched(true);
-     } catch (error) {
-         console.error("Search error:", error);
-         alert("Failed to search hotels. Please try again.");
-     }
- };
-console.log("HOTELS RESPONSE:", hotelResults);
-    const handleAdd = (index: number) => {
-        setAddedHotels((prev) =>
-            prev.includes(index)
-                ? prev.filter((i) => i !== index)
-                : [...prev, index],
-        );
+            if (!firstDest?.dest_id) {
+                alert("Destination not found");
+                return;
+            }
+
+            setSearchParams({
+                dest_id: String(firstDest.dest_id),
+                search_type: firstDest.search_type || "CITY",
+                arrival_date: checkIn,
+                departure_date: checkOut,
+                adults: guests,
+                room_qty: rooms,
+            });
+        } catch {
+            alert("Failed to search hotels. Please try again.");
+        }
+    };
+
+    const handleItineraryToggle = (hotel: (typeof cleanHotels)[number]) => {
+        const isAlreadyAdded = addedHotels.includes(hotel.hotel_id);
+
+        if (isAlreadyAdded) {
+            setAddedHotels((prev) =>
+                prev.filter((id) => id !== hotel.hotel_id),
+            );
+            dispatch(removeHotel(hotel.hotel_id));
+        } else {
+            setAddedHotels((prev) => [...prev, hotel.hotel_id]);
+            dispatch(addHotel(hotel));
+        }
     };
 
     return (
@@ -293,37 +374,37 @@ console.log("HOTELS RESPONSE:", hotelResults);
 
                     {/* Search button */}
                     <button
-                        onClick={handleSearch}
-                        className="w-full py-3.5 rounded text-white font-semibold text-sm transition-opacity hover:opacity-90"
+                        onClick={handleSearchSubmit}
+                        disabled={isSearchingHotels}
+                        className="w-full py-3.5 rounded text-white font-semibold text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
                         style={{ backgroundColor: theme.colors.primary }}
                     >
-                        Search Hotels
+                        {isSearchingHotels
+                            ? "Searching Hotels..."
+                            : "Search Hotels"}
                     </button>
                 </div>
             </div>
 
-            {isLoading && (
-                <p className="text-sm text-gray-500 px-6">Loading hotels...</p>
-            )}
-
-            {isError && (
-                <p className="text-sm text-red-500 px-6">
-                    Failed to load hotels
-                </p>
-            )}
-
             {/* Results */}
-            {hasSearched && (
+            {searchParams && (
                 <div className="px-6 pb-10 flex flex-col gap-4">
+                    {hotelError && (
+                        <p className="text-red-500 text-center text-sm">
+                            Failed to load hotels. Please try again.
+                        </p>
+                    )}
+
                     {/* Results header */}
                     <div className="flex items-center justify-between flex-wrap gap-3">
                         <div>
                             <h2 className="font-bold text-gray-900 text-base">
-                                {hotelResults?.data.length} hotels found
+                                {cleanHotels.length} hotels found
                             </h2>
                             <p className="text-xs text-gray-400">
                                 {destination || "All destinations"} · {rooms}{" "}
-                                room{rooms > 1 ? "s" : ""} · {guests} guest
+                                room
+                                {rooms > 1 ? "s" : ""} · {guests} guest
                                 {guests > 1 ? "s" : ""}
                             </p>
                         </div>
@@ -382,36 +463,50 @@ console.log("HOTELS RESPONSE:", hotelResults);
                         ))}
                     </div>
 
+                    {cleanHotels.length === 0 && !isSearchingHotels && (
+                        <p className="text-sm text-gray-500 text-center py-8">
+                            No hotels found for this destination
+                        </p>
+                    )}
+
                     {/* Hotel cards with Add button */}
-                    {(hotelResults?.data || []).map((hotel: any, i: number) => {
+                    {cleanHotels.map((hotel) => {
+                        const added = addedHotels.includes(hotel.hotel_id);
+
                         return (
                             <div key={hotel.hotel_id} className="flex flex-col">
-                                <HotelCard
-                                    name={hotel.name}
-                                    address={hotel.address}
-                                    rating={hotel.reviewScore}
-                                    price={
-                                        hotel.priceBreakdown?.grossPrice?.value
-                                    }
-                                />
+                                <HotelCard {...hotel} />
                                 <div className="flex justify-end mt-2">
                                     <button
                                         onClick={() =>
-                                            dispatch(
-                                                addHotel({
-                                                    id: hotel.hotel_id,
-                                                    name: hotel.name,
-                                                    address: hotel.address,
-                                                    price: hotel.priceBreakdown
-                                                        ?.grossPrice?.value,
-                                                }),
-                                            )
+                                            handleItineraryToggle(hotel)
                                         }
-                                        className="px-5 py-2 rounded-xl text-sm font-semibold bg-blue-600 text-white"
+                                        className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all"
+                                        style={
+                                            added
+                                                ? {
+                                                      backgroundColor:
+                                                          "#dcfce7",
+                                                      color: "#16a34a",
+                                                  }
+                                                : {
+                                                      backgroundColor:
+                                                          theme.colors.primary,
+                                                      color: "#fff",
+                                                  }
+                                        }
                                     >
-                                        Add to itinerary
+                                        <Icon
+                                            icon={
+                                                added ? "mdi:check" : "mdi:plus"
+                                            }
+                                            width="16"
+                                        />
+                                        {added
+                                            ? "Added to itinerary"
+                                            : "Add to itinerary"}
                                     </button>
-                                </div>{" "}
+                                </div>
                             </div>
                         );
                     })}
@@ -419,7 +514,7 @@ console.log("HOTELS RESPONSE:", hotelResults);
             )}
 
             {/* Empty state */}
-            {!hasSearched && (
+            {!searchParams && (
                 <div className="flex flex-col items-center justify-center py-20 text-center px-6">
                     <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
                         <Icon

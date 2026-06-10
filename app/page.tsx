@@ -80,48 +80,12 @@ const hotels = [
     },
 ];
 
-const activities = [
-    {
-        name: "The Museum of Modern Art",
-        description:
-            "Works from Van Gogh to Warhol & beyond plus a sculpture garden, 2 cafes & The modern restaurant",
-        rating: 4.5,
-        reviews: 436,
-        duration: "1 Hour",
-        price: "123,450.00",
-        timeDate: "10:30 AM on Mar 19",
-        included: "Admission to the Empire State Building",
-        day: "Day 1",
-    },
-    {
-        name: "The Museum of Modern Art",
-        description:
-            "Works from Van Gogh to Warhol & beyond plus a sculpture garden, 2 cafes & The modern restaurant",
-        rating: 4.5,
-        reviews: 436,
-        duration: "1 Hour",
-        price: "123,450.00",
-        timeDate: "10:30 AM on Mar 19",
-        included: "Admission to the Empire State Building",
-        day: "Day 1 - (2)",
-    },
-    {
-        name: "The Museum of Modern Art",
-        description:
-            "Works from Van Gogh to Warhol & beyond plus a sculpture garden, 2 cafes & The modern restaurant",
-        rating: 4.5,
-        reviews: 436,
-        duration: "1 Hour",
-        price: "123,450.00",
-        timeDate: "10:30 AM on Mar 19",
-        included: "Admission to the Empire State Building",
-        day: "Day 2",
-    },
-];
 export default function Home() {
   const itineraryFlights = useSelector(
       (state: RootState) => state.itinerary.flights,
   );
+  const activities = useSelector((state: any) => state.itinerary.activities);
+
   console.log({ itineraryFlights });
     return (
         <div className="w-full flex flex-col bg-white">
@@ -360,8 +324,8 @@ export default function Home() {
                         </a>
                     </div>
                     <div className="flex flex-col gap-3 px-4 pb-4">
-                        {activities.map((activity, i) => (
-                            <ActivityCard key={i} {...activity} />
+                        {activities.map((activity: any) => (
+                            <ActivityCard key={activity.id} {...activity} />
                         ))}
                     </div>
                 </div>

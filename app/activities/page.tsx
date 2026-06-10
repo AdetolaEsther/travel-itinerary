@@ -5,68 +5,81 @@ import { Icon } from "@iconify/react";
 import { theme } from "@/app/theme";
 import ActivityCard from "@/app/components/ActivityCard";
 import Link from "next/link";
-import { useLazySearchAttractionsQuery, useLazySearchLocationQuery } from "../services/activitesApi";
+import { useSearchLocationQuery } from "../services/activitesApi";
+import { useDispatch } from "react-redux";
+import { addActivity } from "../store/itinerarySlice";
 
 const sortOptions = ["Top Rated", "Price: Low", "Duration"];
 const categoryFilters = ["All", "Museums", "Tours", "Nature", "Shows", "Food"];
 
+const formatCategory = (slug?: string) =>
+    (slug || "activity").replace(/-/g, " ");
+
+interface AttractionProduct {
+    id: string;
+    title: string;
+    productId: string;
+    productSlug: string;
+    taxonomySlug: string;
+    cityName: string;
+    countryCode?: string;
+}
+
+const mapProductsToActivities = (products: AttractionProduct[] = []) =>
+    products.map((product) => {
+        const category = formatCategory(product.taxonomySlug);
+        const location = [product.cityName, product.countryCode?.toUpperCase()]
+            .filter(Boolean)
+            .join(", ");
+
+        return {
+            id: product.productId,
+            name: product.title,
+            description: `${category} in ${product.cityName}`,
+            category,
+            location,
+            included: category,
+            price: "On request",
+            duration: category,
+        };
+    });
+
 export default function ActivitySearchPage() {
-
-    const [triggerLocation] = useLazySearchLocationQuery();
-    const [triggerActivities, { data: activityResults, isLoading }] =
-        useLazySearchAttractionsQuery();
-
-console.log(activityResults);
-    const [locationId, setLocationId] = useState<string | null>(null);
-    
+    const dispatch = useDispatch();
     const [destination, setDestination] = useState("");
     const [date, setDate] = useState("");
     const [guests, setGuests] = useState(1);
-    const [hasSearched, setHasSearched] = useState(false);
+    const [searchQuery, setSearchQuery] = useState<string | null>(null);
     const [activeSort, setActiveSort] = useState("Top Rated");
     const [activeCategory, setActiveCategory] = useState("All");
-    const [addedActivities, setAddedActivities] = useState<number[]>([]);
-const handleSearch = async () => {
-    try {
-        const res = await triggerLocation(destination).unwrap();
+    const [addedActivities, setAddedActivities] = useState<string[]>([]);
 
-        console.log("LOCATION RESPONSE RAW:", res);
+    const {
+        data: activityResults,
+        isFetching: isSearchingActivities,
+        error: activityError,
+    } = useSearchLocationQuery(searchQuery!, { skip: !searchQuery });
 
-        const first = res?.data?.[0] || res?.[0] || res?.results?.[0];
+    const cleanActivities = mapProductsToActivities(
+        activityResults?.data?.products,
+    );
 
-        if (!first) {
-            console.log("No location found");
+    const handleSearchSubmit = () => {
+        if (!destination.trim()) {
+            alert("Please enter a destination");
             return;
         }
 
-        const id = first?.id || first?.dest_id || first?.ufi;
-
-        if (!id) {
-            console.log("No valid location ID found:", first);
-            return;
-        }
-
-        setLocationId(id);
-
-        const activities = await triggerActivities({
-            id,
-            page: 1,
-        }).unwrap();
-
-        console.log("ACTIVITIES:", activities);
-
-        setHasSearched(true);
-    } catch (err) {
-        console.error("Activity search failed:", err);
-    }
-};
-    const handleAdd = (index: number) => {
-        setAddedActivities((prev) =>
-            prev.includes(index)
-                ? prev.filter((i) => i !== index)
-                : [...prev, index],
-        );
+        setSearchQuery(destination.trim());
     };
+
+   const handleAdd = (activity: any) => {
+       dispatch(addActivity(activity));
+
+       setAddedActivities((prev) =>
+           prev.includes(activity.id) ? prev : [...prev, activity.id],
+       );
+   };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -176,23 +189,31 @@ const handleSearch = async () => {
 
                     {/* Search button */}
                     <button
-                        onClick={handleSearch}
-                        className="w-full py-3.5 rounded text-white font-semibold text-sm transition-opacity hover:opacity-90"
+                        onClick={handleSearchSubmit}
+                        disabled={isSearchingActivities}
+                        className="w-full py-3.5 rounded text-white font-semibold text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
                         style={{ backgroundColor: theme.colors.primary }}
                     >
-                        Search Activities
+                        {isSearchingActivities
+                            ? "Searching Activities..."
+                            : "Search Activities"}
                     </button>
                 </div>
             </div>
 
             {/* Results */}
-            {hasSearched && (
+            {searchQuery && (
                 <div className="px-6 pb-10 flex flex-col gap-4">
+                    {activityError && (
+                        <p className="text-red-500 text-center text-sm">
+                            Failed to load activities. Please try again.
+                        </p>
+                    )}
                     {/* Results header */}
                     <div className="flex items-center justify-between flex-wrap gap-3">
                         <div>
                             <h2 className="font-bold text-gray-900 text-base">
-                                {activityResults?.data.length} activities found
+                                {cleanActivities.length} activities found
                             </h2>
                             <p className="text-xs text-gray-400">
                                 {destination || "All destinations"} · {guests}{" "}
@@ -224,7 +245,6 @@ const handleSearch = async () => {
                         </div>
                     </div>
 
-                    {/* Category filter pills */}
                     <div className="flex items-center gap-2 flex-wrap">
                         {categoryFilters.map((cat) => (
                             <button
@@ -251,67 +271,55 @@ const handleSearch = async () => {
                         ))}
                     </div>
 
-                    {/* Activity cards with Add button */}
-                    {(activityResults?.data || []).map(
-                        (activity: any, i: number) => {
-                            const added = addedActivities.includes(i);
-
-                            return (
-                                <div
-                                    key={activity.id || i}
-                                    className="flex flex-col"
-                                >
-                                    <ActivityCard
-                                        name={activity.name}
-                                        description={activity.shortDescription}
-                                        rating={activity.rating}
-                                        reviews={activity.reviews}
-                                        price={activity.price?.amount}
-                                        duration={activity.duration}
-                                        included={activity.included}
-                                    />
-
-                                    <div className="flex justify-end mt-2">
-                                        <button
-                                            onClick={() => handleAdd(i)}
-                                            className="flex items-center gap-2 px-5 py-2 rounded text-sm font-semibold"
-                                            style={
-                                                added
-                                                    ? {
-                                                          backgroundColor:
-                                                              "#dcfce7",
-                                                          color: "#16a34a",
-                                                      }
-                                                    : {
-                                                          backgroundColor:
-                                                              theme.colors
-                                                                  .primary,
-                                                          color: "#fff",
-                                                      }
-                                            }
-                                        >
-                                            <Icon
-                                                icon={
-                                                    added
-                                                        ? "mdi:check"
-                                                        : "mdi:plus"
-                                                }
-                                                width="16"
-                                            />
-                                            {added
-                                                ? "Added"
-                                                : "Add to itinerary"}
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        },
+                    {cleanActivities.length === 0 && !isSearchingActivities && (
+                        <p className="text-sm text-gray-500 text-center py-8">
+                            No activities found for this destination
+                        </p>
                     )}
+
+                    {/* Activity cards with Add button */}
+                    {cleanActivities.map((activity) => {
+                        const added = addedActivities.includes(activity.id);
+
+                        return (
+                            <div key={activity.id} className="flex flex-col">
+                                <ActivityCard {...activity} />
+
+                                <div className="flex justify-end mt-2">
+                                    <button
+                                        onClick={() => handleAdd(activity)}
+                                        className="flex items-center gap-2 px-5 py-2 rounded text-sm font-semibold"
+                                        style={
+                                            added
+                                                ? {
+                                                      backgroundColor:
+                                                          "#dcfce7",
+                                                      color: "#16a34a",
+                                                  }
+                                                : {
+                                                      backgroundColor:
+                                                          theme.colors.primary,
+                                                      color: "#fff",
+                                                  }
+                                        }
+                                    >
+                                        <Icon
+                                            icon={
+                                                added ? "mdi:check" : "mdi:plus"
+                                            }
+                                            width="16"
+                                        />
+                                        {added ? "Added" : "Add to itinerary"}
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
 
             {/* Empty state */}
-            {!hasSearched && (
+            {!searchQuery && (
                 <div className="flex flex-col items-center justify-center py-20 text-center px-6">
                     <div
                         className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"

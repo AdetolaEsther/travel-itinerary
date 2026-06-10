@@ -8,13 +8,15 @@ import Image from "next/image";
 interface ActivityCardProps {
     name: string;
     description: string;
-    rating: number;
-    reviews: number;
-    duration: string;
-    price: string;
+    rating?: number;
+    reviews?: number;
+    duration?: string;
+    price?: string;
     timeDate?: string;
-    included: string;
+    included?: string;
     day?: string;
+    category?: string;
+    location?: string;
 }
 
 const ActivityCard = ({
@@ -27,6 +29,8 @@ const ActivityCard = ({
     timeDate,
     included,
     day,
+    category,
+    location,
 }: ActivityCardProps) => {
     const [dismissed, setDismissed] = useState(false);
     const [imgIndex, setImgIndex] = useState(0);
@@ -80,18 +84,27 @@ const ActivityCard = ({
                                 </p>
                             </div>
                             <div className="text-right shrink-0 flex flex-col items-end gap-2">
-                                <div>
-                                    <p className="text-xl font-bold text-gray-900">
-                                        ₦ {price}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                        {timeDate}
-                                    </p>
-                                </div>
+                                {price && (
+                                    <div>
+                                        <p className="text-xl font-bold text-gray-900">
+                                            {price.startsWith("₦") ||
+                                            price === "On request"
+                                                ? price
+                                                : `₦ ${price}`}
+                                        </p>
+                                        {timeDate && (
+                                            <p className="text-xs text-gray-500">
+                                                {timeDate}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
                                 <div className="flex flex-col items-center gap-1">
-                                    <span className="text-[10px] bg-[#0A369D] font-bold text-white px-3 py-1 rounded">
-                                        {day}
-                                    </span>
+                                    {(day || category) && (
+                                        <span className="text-[10px] bg-[#0A369D] font-bold text-white px-3 py-1 rounded capitalize">
+                                            {day || category}
+                                        </span>
+                                    )}
                                     <div className="flex flex-col gap-0.5">
                                         <button className="text-gray-300 hover:text-gray-500">
                                             <Icon
@@ -124,40 +137,52 @@ const ActivityCard = ({
                                 />
                                 <span>Directions</span>
                             </button>
-                            <div className="flex items-center gap-1">
-                                <Icon
-                                    icon="mdi:star"
-                                    width="14"
-                                    height="14"
-                                    className="text-yellow-400"
-                                />
-                                <span className="font-medium text-gray-700">
-                                    {rating}
-                                </span>
-                                <span>({reviews})</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <Icon
-                                    icon="mdi:clock-outline"
-                                    width="14"
-                                    height="14"
-                                />
-                                <span>{duration}</span>
-                            </div>
+                            {location && (
+                                <div className="flex items-center gap-1">
+                                    <Icon
+                                        icon="mdi:map-marker"
+                                        width="14"
+                                        height="14"
+                                    />
+                                    <span>{location}</span>
+                                </div>
+                            )}
+                            {rating != null && rating > 0 && (
+                                <div className="flex items-center gap-1">
+                                    <Icon
+                                        icon="mdi:star"
+                                        width="14"
+                                        height="14"
+                                        className="text-yellow-400"
+                                    />
+                                    <span className="font-medium text-gray-700">
+                                        {rating}
+                                    </span>
+                                    {reviews != null && reviews > 0 && (
+                                        <span>({reviews})</span>
+                                    )}
+                                </div>
+                            )}
+                            {duration && (
+                                <div className="flex items-center gap-1">
+                                    <Icon
+                                        icon="mdi:clock-outline"
+                                        width="14"
+                                        height="14"
+                                    />
+                                    <span>{duration}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 px-4 py-3 text-xs text-gray-500 flex-wrap">
-                    <span className="font-medium">What's Included:</span>
-                    <span>{included}</span>
-                    <button
-                        style={{ color: theme.colors.primary }}
-                        className="font-semibold"
-                    >
-                        See more
-                    </button>
-                </div>
+                {included && (
+                    <div className="flex items-center gap-2 px-4 py-3 text-xs text-gray-500 flex-wrap">
+                        <span className="font-medium">Category:</span>
+                        <span className="capitalize">{included}</span>
+                    </div>
+                )}
 
                 <div className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-4">

@@ -94,7 +94,26 @@ const itinerarySlice = createSlice({
         // ACTIVITIES (placeholder for later)
         // =====================
         addActivity: (state, action: PayloadAction<any>) => {
-            state.activities.push(action.payload);
+            const exists = state.activities.some(
+                (a) => a.id === action.payload.id,
+            );
+
+            if (!exists) {
+                state.activities.push(action.payload);
+
+                if (typeof window !== "undefined") {
+                    localStorage.setItem(
+                        "itinerary_activities",
+                        JSON.stringify(state.activities),
+                    );
+                }
+            }
+        },
+
+        removeActivity: (state, action: PayloadAction<string>) => {
+            state.activities = state.activities.filter(
+                (a) => a.id !== action.payload,
+            );
 
             if (typeof window !== "undefined") {
                 localStorage.setItem(
@@ -112,6 +131,7 @@ export const {
     addHotel,
     removeHotel,
     addActivity,
+    removeActivity,
 } = itinerarySlice.actions;
 
 export default itinerarySlice.reducer;
