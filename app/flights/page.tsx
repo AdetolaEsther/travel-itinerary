@@ -135,22 +135,7 @@ export default function FlightSearchPage() {
                        : ["Baggage included", "In-flight entertainment"],
            };
        }) || [];
-// console.log("flightResults", flightResults);
-// console.log("cleanFlights", cleanFlights);
-
-// console.log(
-//     "aggregation.flightDetails",
-//     flightResults?.data?.aggregation?.flightDetails,
-// );
-
-// console.log("flightDetails", flightResults?.data?.flightDetails);
-
-// console.log("itineraries", flightResults?.data?.itineraries);
-console.log(Object.keys(flightResults || {}));
-console.log("data", flightResults?.data);
-console.log("aggregation", flightResults?.data?.aggregation);
-console.log("flightOffers", flightResults?.data?.flightOffers);
-console.log("firstOffer", flightResults?.data?.flightOffers?.[0]);
+;
 
     return (
         <div className="min-h-screen bg-gray-50">
