@@ -12,6 +12,7 @@ export default function LayoutShell({
     const [isSideOpen, setIsSideOpen] = useState(false);
 
     return (
+        
         <div className="min-h-screen bg-[#f5f6f8]">
             <TopNav onMenuClick={() => setIsSideOpen(true)} />
 
