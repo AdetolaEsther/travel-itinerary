@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -6,12 +5,14 @@ import { Icon } from "@iconify/react";
 import { theme } from "@/app/theme";
 import Link from "next/link";
 import HotelCard from "../components/Hotelcard";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store/store";
 import {
     useLazySearchDestinationQuery,
     useSearchHotelsQuery,
 } from "../services/hotelApi";
 import { addHotel, removeHotel } from "../store/itinerarySlice";
+import { HOTEL_CURRENCIES, type HotelCurrencyCode } from "../currencies";
 
 interface HotelSearchParams {
     dest_id: string;
@@ -20,6 +21,7 @@ interface HotelSearchParams {
     departure_date: string;
     adults: number;
     room_qty: number;
+    currency_code: HotelCurrencyCode;
 }
 
 const resolveDestination = (res: { data?: unknown }) => {
@@ -42,20 +44,38 @@ const mapHotelsToCards = (
             reviewCount?: number;
             propertyClass?: number;
             wishlistName?: string;
+            photoUrls?: string[];
+            priceBreakdown?: {
+                grossPrice?: { value?: number; currency?: string };
+                excludedPrice?: { value?: number; currency?: string };
+            };
         };
-        priceBreakdown?: { grossPrice?: { value?: number } };
     }> = [],
     checkIn?: string,
     checkOut?: string,
+    defaultCurrency = "USD",
 ) =>
     hotels.map((hotel) => {
         const property = hotel.property || {};
-        const priceValue = hotel.priceBreakdown?.grossPrice?.value;
+        const priceBreakdown = property.priceBreakdown;
+        const priceValue = priceBreakdown?.grossPrice?.value;
+        const currency =
+            priceBreakdown?.grossPrice?.currency || defaultCurrency;
         const formattedPrice =
             priceValue != null
-                ? Number(priceValue).toLocaleString("en-NG", {
+                ? Number(priceValue).toLocaleString("en-US", {
                       minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
                   })
+                : undefined;
+
+        const taxValue = priceBreakdown?.excludedPrice?.value;
+        const roomNightsSummary =
+            taxValue != null
+                ? `+${Number(taxValue).toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                  })} ${currency} taxes and charges`
                 : undefined;
 
         return {
@@ -69,6 +89,9 @@ const mapHotelsToCards = (
                 : undefined,
             price: formattedPrice,
             totalPrice: formattedPrice,
+            currency,
+            roomNightsSummary,
+            imageUrl: property.photoUrls?.[0],
             checkIn,
             checkOut,
         };
@@ -136,6 +159,10 @@ const starFilters = ["Any", "3★", "4★", "5★"];
 export default function HotelSearchPage() {
     const dispatch = useDispatch();
 
+    const addedHotels = useSelector(
+        (state: RootState) => state.itinerary.hotels,
+    );
+
     const [triggerDestination] = useLazySearchDestinationQuery();
 
     const [destination, setDestination] = useState("");
@@ -143,12 +170,12 @@ export default function HotelSearchPage() {
     const [checkOut, setCheckOut] = useState("");
     const [rooms, setRooms] = useState(1);
     const [guests, setGuests] = useState(2);
+    const [currency, setCurrency] = useState<HotelCurrencyCode>("USD");
     const [searchParams, setSearchParams] = useState<HotelSearchParams | null>(
         null,
     );
     const [activeSort, setActiveSort] = useState("Top Rated");
     const [activeStar, setActiveStar] = useState("Any");
-    const [addedHotels, setAddedHotels] = useState<string[]>([]);
 
     const {
         data: hotelResults,
@@ -160,6 +187,7 @@ export default function HotelSearchPage() {
         hotelResults?.data?.hotels,
         searchParams?.arrival_date,
         searchParams?.departure_date,
+        searchParams?.currency_code,
     );
 
     const handleSearchSubmit = async () => {
@@ -188,6 +216,7 @@ export default function HotelSearchPage() {
                 departure_date: checkOut,
                 adults: guests,
                 room_qty: rooms,
+                currency_code: currency,
             });
         } catch {
             alert("Failed to search hotels. Please try again.");
@@ -195,15 +224,13 @@ export default function HotelSearchPage() {
     };
 
     const handleItineraryToggle = (hotel: (typeof cleanHotels)[number]) => {
-        const isAlreadyAdded = addedHotels.includes(hotel.hotel_id);
+        const isAlreadyAdded = addedHotels.some(
+            (h) => h.hotel_id === hotel.hotel_id,
+        );
 
         if (isAlreadyAdded) {
-            setAddedHotels((prev) =>
-                prev.filter((id) => id !== hotel.hotel_id),
-            );
             dispatch(removeHotel(hotel.hotel_id));
         } else {
-            setAddedHotels((prev) => [...prev, hotel.hotel_id]);
             dispatch(addHotel(hotel));
         }
     };
@@ -302,8 +329,8 @@ export default function HotelSearchPage() {
                         </div>
                     </div>
 
-                    {/* Rooms + Guests */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Rooms + Guests + Currency */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="flex flex-col gap-1.5">
                             <label className="text-xs font-medium text-gray-500">
                                 Rooms
@@ -368,6 +395,34 @@ export default function HotelSearchPage() {
                                 <span className="text-xs text-gray-400 ml-1">
                                     guest{guests > 1 ? "s" : ""}
                                 </span>
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-xs font-medium text-gray-500">
+                                Currency
+                            </label>
+                            <div className="flex items-center gap-2 border border-gray-200 rounded px-4 py-3 bg-gray-50">
+                                <Icon
+                                    icon="mdi:currency-usd"
+                                    width="18"
+                                    height="18"
+                                    className="text-gray-400 shrink-0"
+                                />
+                                <select
+                                    value={currency}
+                                    onChange={(e) =>
+                                        setCurrency(
+                                            e.target.value as HotelCurrencyCode,
+                                        )
+                                    }
+                                    className="bg-transparent text-sm text-gray-800 outline-none w-full"
+                                >
+                                    {HOTEL_CURRENCIES.map(({ code, label }) => (
+                                        <option key={code} value={code}>
+                                            {label}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -471,10 +526,15 @@ export default function HotelSearchPage() {
 
                     {/* Hotel cards with Add button */}
                     {cleanHotels.map((hotel) => {
-                        const added = addedHotels.includes(hotel.hotel_id);
+                        const isAdded = addedHotels.some(
+                            (h) => h.hotel_id === hotel.hotel_id,
+                        );
 
                         return (
-                            <div key={hotel.hotel_id} className="flex flex-col">
+                            <div
+                                key={hotel.hotel_id}
+                                className="flex flex-col gap-0 bg-white p-2 rounded border border-gray-100 shadow-sm"
+                            >
                                 <HotelCard {...hotel} />
                                 <div className="flex justify-end mt-2">
                                     <button
@@ -483,7 +543,7 @@ export default function HotelSearchPage() {
                                         }
                                         className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all"
                                         style={
-                                            added
+                                            isAdded
                                                 ? {
                                                       backgroundColor:
                                                           "#dcfce7",
@@ -498,11 +558,14 @@ export default function HotelSearchPage() {
                                     >
                                         <Icon
                                             icon={
-                                                added ? "mdi:check" : "mdi:plus"
+                                                isAdded
+                                                    ? "mdi:check"
+                                                    : "mdi:plus"
                                             }
                                             width="16"
+                                            height="16"
                                         />
-                                        {added
+                                        {isAdded
                                             ? "Added to itinerary"
                                             : "Add to itinerary"}
                                     </button>

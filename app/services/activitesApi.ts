@@ -1,8 +1,19 @@
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type {
+    ApiResponse,
+    AttractionDetailsData,
+    AttractionLocationData,
+} from "../types/api";
 
 const RAPID_API_KEY = process.env.NEXT_PUBLIC_RAPID_API_KEY!;
 const RAPID_API_HOST = process.env.NEXT_PUBLIC_RAPID_API_HOST!;
+
+export interface AttractionSearchParams {
+    id: string;
+    page?: number;
+    currency_code?: string;
+}
 
 export const attractionApi = createApi({
     reducerPath: "attractionApi",
@@ -16,23 +27,26 @@ export const attractionApi = createApi({
         },
     }),
     endpoints: (builder) => ({
-        // 1. Search location (get city/ufi id)
-        searchLocation: builder.query<any, string>({
+        searchLocation: builder.query<
+            ApiResponse<AttractionLocationData>,
+            string
+        >({
             query: (text) =>
                 `/searchLocation?query=${encodeURIComponent(text)}&languagecode=en-us`,
         }),
 
-        // 2. Get attractions in a city
         searchAttractions: builder.query<
-            any,
-            { id: string; page?: number; currency_code?: string }
+            ApiResponse<AttractionLocationData>,
+            AttractionSearchParams
         >({
             query: ({ id, page = 1, currency_code = "USD" }) =>
                 `/searchAttractions?id=${id}&sortBy=trending&page=${page}&currency_code=${currency_code}&languagecode=en-us`,
         }),
 
-        // 3. Get attraction details
-        getAttractionDetails: builder.query<any, string>({
+        getAttractionDetails: builder.query<
+            ApiResponse<AttractionDetailsData>,
+            string
+        >({
             query: (slug) =>
                 `/getAttractionDetails?slug=${slug}&currency_code=USD`,
         }),
@@ -46,3 +60,4 @@ export const {
     useLazySearchAttractionsQuery,
     useGetAttractionDetailsQuery,
 } = attractionApi;
+

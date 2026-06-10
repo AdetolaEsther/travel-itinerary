@@ -9,6 +9,7 @@ import ActivityCard from "./components/ActivityCard";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { RootState } from "./store/store";
+import { ItineraryHotel } from "./types/itinerary";
 
 const tripCards = [
     {
@@ -49,42 +50,18 @@ const tripCards = [
     },
 ];
 
-const hotels = [
-    {
-        name: "Riviera Resort, Lekki",
-        address:
-            "18, Kenneth Agbakuru Street, Off Access Bank Admiralty Way, Lekki Phase1",
-        rating: 8.5,
-        reviews: 436,
-        roomType: "King size room",
-        price: "123,450.00",
-        totalPrice: "560,000",
-        roomNightsSummary: "1 room x 10 nights incl. taxes",
-        facilities: ["Pool", "Bar"],
-        checkIn: "20-04-2024",
-        checkOut: "29-04-2024",
-    },
-    {
-        name: "Riviera Resort, Lekki",
-        address:
-            "18, Kenneth Agbakuru Street, Off Access Bank Admiralty Way, Lekki Phase1",
-        rating: 8.5,
-        reviews: 436,
-        roomType: "King size room",
-        price: "123,450.00",
-        totalPrice: "560,000",
-        roomNightsSummary: "1 room x 10 nights incl. taxes",
-        facilities: ["Pool", "Bar"],
-        checkIn: "20-04-2024",
-        checkOut: "29-04-2024",
-    },
-];
+
 
 export default function Home() {
   const itineraryFlights = useSelector(
       (state: RootState) => state.itinerary.flights,
   );
-  const activities = useSelector((state: any) => state.itinerary.activities);
+   const itineraryHotels = useSelector(
+       (state: RootState) => state.itinerary.hotels,
+   );
+  const activities = useSelector(
+      (state: RootState) => state.itinerary.activities,
+  );
 
   console.log({ itineraryFlights });
     return (
@@ -294,9 +271,15 @@ export default function Home() {
                         </a>
                     </div>
                     <div className="flex flex-col gap-3 px-4 pb-4">
-                        {hotels.map((hotel, i) => (
-                            <HotelCard key={i} {...hotel} />
-                        ))}
+                        {itineraryHotels.length > 0 ? (
+                            itineraryHotels.map((hotel: ItineraryHotel) => (
+                                <HotelCard key={hotel.hotel_id} {...hotel} />
+                            ))
+                        ) : (
+                            <p className="text-sm text-white/80">
+                                No hotels added to itinerary yet
+                            </p>
+                        )}
                     </div>
                 </div>
                 <div

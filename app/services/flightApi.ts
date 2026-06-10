@@ -1,4 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { ApiResponse, FlightDestination, FlightDetailsData, FlightSearchData } from "../types/api";
+
+export interface FlightSearchParams {
+    fromId: string;
+    toId: string;
+    departDate: string;
+    cabinClass: string;
+}
 
 const RAPID_API_KEY = process.env.NEXT_PUBLIC_RAPID_API_KEY!;
 const RAPID_API_HOST = process.env.NEXT_PUBLIC_RAPID_API_HOST!;
@@ -15,34 +23,31 @@ export const flightApi = createApi({
         },
     }),
     endpoints: (builder) => ({
-        // Step 1: Search Destinations to get Airport IDs
-        searchDestination: builder.query<any, string>({
+        searchDestination: builder.query<
+            ApiResponse<FlightDestination[]>,
+            string
+        >({
             query: (text) => `/searchDestination?query=${text}`,
         }),
 
-        // Step 2: Search for flights using IDs and date parameters
         searchFlights: builder.query<
-            any,
-            {
-                fromId: string;
-                toId: string;
-                departDate: string;
-                cabinClass: string;
-            }
+            ApiResponse<FlightSearchData>,
+            FlightSearchParams
         >({
             query: ({ fromId, toId, departDate, cabinClass }) =>
                 `/searchFlights?fromId=${fromId}&toId=${toId}&departDate=${departDate}&pageNo=1&adults=1&cabinClass=${cabinClass.toUpperCase()}&currency_code=NGN`,
         }),
 
-        // Step 3: Get flight details
-        getFlightDetails: builder.query<any, { flightId: string }>({
+        getFlightDetails: builder.query<
+            ApiResponse<FlightDetailsData>,
+            { flightId: string }
+        >({
             query: ({ flightId }) =>
                 `/getFlightDetails?flightId=${flightId}&currency_code=NGN`,
         }),
     }),
 });
 
-// RTK Query auto-generates hooks for us based on the names above!
 export const {
     useLazySearchDestinationQuery,
     useSearchFlightsQuery,
