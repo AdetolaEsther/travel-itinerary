@@ -9,7 +9,11 @@ import ActivityCard from "./components/ActivityCard";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { RootState } from "./store/store";
-import { ItineraryHotel } from "./types/itinerary";
+import {
+    ItineraryActivity,
+    ItineraryFlight,
+    ItineraryHotel,
+} from "./types/itinerary";
 
 const tripCards = [
     {
@@ -236,8 +240,8 @@ export default function Home() {
                         </a>
                     </div>
                     {itineraryFlights?.length > 0 ? (
-                        itineraryFlights.map((flight: any, i: number) => (
-                            <FlightCard key={i} {...flight} />
+                        itineraryFlights.map((flight: ItineraryFlight) => (
+                            <FlightCard key={flight.flightCode} {...flight} />
                         ))
                     ) : (
                         <p className="text-sm text-gray-500">
@@ -307,7 +311,7 @@ export default function Home() {
                         </a>
                     </div>
                     <div className="flex flex-col gap-3 px-4 pb-4">
-                        {activities.map((activity: any) => (
+                        {activities.map((activity: ItineraryActivity) => (
                             <ActivityCard key={activity.id} {...activity} />
                         ))}
                     </div>
