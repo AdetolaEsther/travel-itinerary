@@ -38,7 +38,8 @@ const TopNav = ({ onMenuClick }: TopNavProps) => {
     const pathname = usePathname();
 
     return (
-        <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white  shadow-sm">
+            {" "}
             <nav className="h-[72px] px-4 lg:px-6 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 shrink-0">
                     <button
