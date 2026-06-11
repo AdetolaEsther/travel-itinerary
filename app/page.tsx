@@ -76,7 +76,7 @@ export default function Home() {
                         src="/banner.png"
                         alt="Banner"
                         fill
-                        className="object-cover"
+                        className="object-contain"
                         priority
                     />
                     <button className="absolute left-4 top-[30%] -translate-y-1/2 z-10 bg-white/40 rounded p-2">
