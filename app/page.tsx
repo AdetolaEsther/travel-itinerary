@@ -79,7 +79,7 @@ export default function Home() {
                         className="object-cover"
                         priority
                     />
-                    <button className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/40 rounded p-2">
+                    <button className="absolute left-4 top-[30%] -translate-y-1/2 z-10 bg-white/40 rounded p-2">
                         <Icon
                             icon="material-symbols:arrow-back"
                             width="28"
@@ -89,7 +89,7 @@ export default function Home() {
                     </button>
                 </div>
 
-                <div className="px-4 md:px-10 lg:px-16 py-6 flex flex-col gap-3">
+                <div className=" py-6 flex flex-col gap-3">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex flex-col gap-2 w-full">
                             <div className="flex items-center gap-2 w-fit text-[#7A4504] bg-[#fef3e2] text-sm font-medium">
