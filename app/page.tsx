@@ -79,7 +79,7 @@ export default function Home() {
                         className="object-contain"
                         priority
                     />
-                    <button className="absolute left-4 top-[30%] -translate-y-1/2 z-10 bg-white/40 rounded p-2">
+                    <button className="absolute left-4 top-[40%] -translate-y-1/2 z-10 bg-white/40 rounded p-2">
                         <Icon
                             icon="material-symbols:arrow-back"
                             width="28"
