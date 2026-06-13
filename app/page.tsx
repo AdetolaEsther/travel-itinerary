@@ -69,9 +69,9 @@ export default function Home() {
 
   console.log({ itineraryFlights });
     return (
-        <div className="w-full flex flex-col bg-white">
+        <div className="w-full flex flex-col bg-white ">
             <section id="home" className="w-full">
-                <div className="relative w-full h-[220px] overflow-hidden">
+                <div className="relative w-full h-[220px]  ">
                     <Image
                         src="/banner.png"
                         alt="Banner"

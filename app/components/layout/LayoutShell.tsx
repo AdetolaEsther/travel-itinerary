@@ -12,7 +12,6 @@ export default function LayoutShell({
     const [isSideOpen, setIsSideOpen] = useState(false);
 
     return (
-        
         <div className="min-h-screen bg-[#f5f6f8]">
             <TopNav onMenuClick={() => setIsSideOpen(true)} />
 
@@ -25,7 +24,7 @@ export default function LayoutShell({
                 />
 
                 <main className="flex-1 min-w-0">
-                    <div className="bg-white rounded shadow-[0_1px_2px_rgba(16,24,40,0.06)] p-6">
+                    <div className="bg-white rounded shadow-[0_1px_2px_rgba(16,24,40,0.06)] pt-0 px-6 ">
                         {children}
                     </div>
                 </main>
